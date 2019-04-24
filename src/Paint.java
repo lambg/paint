@@ -36,7 +36,7 @@ public class Paint extends Application {
     private double mouseX, mouseY, startX, startY;
     private double drawSize = 4;
 
-    ArrayList<Shape> blocks = new ArrayList<Shape>();
+    private ArrayList<Shape> blocks = new ArrayList<>();
 
     public static void main(String[] args) {
         launch(args);
@@ -85,40 +85,24 @@ public class Paint extends Application {
 
     private void buttonEvents(Scene scene, Pane root) {
 
-        clear.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                for (Shape shape : blocks) {
-                    root.getChildren().remove(shape);
-                }
+        clear.setOnMouseClicked(event -> {
+            for (Shape shape : blocks) {
+                root.getChildren().remove(shape);
             }
         });
 
     }
 
-    private void getMouseEvents(@org.jetbrains.annotations.NotNull Scene scene) {
+    private void getMouseEvents(Scene scene) {
 
-        scene.addEventFilter(MouseEvent.ANY, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mouseX = event.getX();
-                mouseY = event.getY();
-            }
+        scene.addEventFilter(MouseEvent.ANY, event -> {
+            mouseX = event.getX();
+            mouseY = event.getY();
         });
 
-        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mousePressed = true;
-            }
-        });
+        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> mousePressed = true);
 
-        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                mousePressed = false;
-            }
-        });
+        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> mousePressed = false);
     }
 
     private void draw(Scene scene, Pane root) {
@@ -138,6 +122,7 @@ public class Paint extends Application {
                 try {
                     root.getChildren().add(block);
                 } catch (Exception IllegalArgumentException) {
+                    //No duplicate children "shape' in parent "root"
                 }
             }
         }
