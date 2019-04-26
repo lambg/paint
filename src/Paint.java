@@ -5,19 +5,14 @@ import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-
-import java.util.ArrayList;
-import java.util.Timer;
 
 
 public class Paint extends Application {
@@ -27,16 +22,15 @@ public class Paint extends Application {
 
     private Pane root;
     private Scene scene;
+    private Canvas canvas;
+    private GraphicsContext gc;
 
-    private Button draw, rect, clear;
+    private Button drawButton, eraseButton, clearButton;
+    private boolean draw = true;
 
-    private boolean mousePressed = false;
-    //boolean mouseRelease = true;
 
-    private double mouseX, mouseY, startX, startY;
-    private double drawSize = 4;
-
-    private ArrayList<Shape> blocks = new ArrayList<>();
+    private double x, y;
+    private double size = 4;
 
     public static void main(String[] args) {
         launch(args);
@@ -44,91 +38,61 @@ public class Paint extends Application {
 
     public void start(Stage primaryStage) {
 
+        initialize(primaryStage);
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        getMouseEvents(canvas, gc);
+    }
+
+    private void initialize(Stage primaryStage) {
         root = new Pane();
         scene = new Scene(root);
-
-        //todo - create an setup method init()
-
         primaryStage.setTitle("JavaFX Paint by Greg Lamb");
         primaryStage.setHeight(DEFAULT_HEIGHT);
         primaryStage.setWidth(DEFAULT_WIDTH);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+
+        canvas = new Canvas(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        gc = canvas.getGraphicsContext2D();
+        root.getChildren().add(canvas);
 
         ToolBar leftToolbar = new ToolBar();
         leftToolbar.setOrientation(Orientation.VERTICAL);
         leftToolbar.prefHeightProperty().bind(primaryStage.heightProperty());
 
-        draw = new Button("Draw");
-        leftToolbar.getItems().add(draw);
-        rect = new Button("rect");
-        leftToolbar.getItems().add(rect);
-        clear = new Button("Clear");
-        leftToolbar.getItems().add(clear);
+        drawButton = new Button("Draw");
+        leftToolbar.getItems().add(drawButton);
+        eraseButton = new Button("Erase");
+        leftToolbar.getItems().add(eraseButton);
+        clearButton = new Button("Clear");
+        leftToolbar.getItems().add(clearButton);
 
         VBox leftBar = new VBox(leftToolbar);
         leftBar.setMinWidth(100);
         leftBar.setMinHeight(DEFAULT_HEIGHT);
         root.getChildren().add(leftBar);
 
-
-        new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                getMouseEvents(scene);
-                //todo - get buttonEvents
-                buttonEvents(scene, root);
-                draw(scene, root);
-            }
-        }.start();
     }
 
-    private void buttonEvents(Scene scene, Pane root) {
+    private void getMouseEvents(Canvas canvas, GraphicsContext gc) {
 
-        clear.setOnMouseClicked(event -> {
-            for (Shape shape : blocks) {
-                root.getChildren().remove(shape);
+        drawButton.setOnMouseClicked(event -> draw = true);
+        eraseButton.setOnMouseClicked(event -> draw = false);
+        clearButton.setOnMouseClicked(event -> gc.clearRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT));
+
+        canvas.setOnMouseDragged(event -> {
+            x = event.getX();
+            y = event.getY();
+
+            if (draw) {
+                gc.setFill(Color.RED);
+                gc.fillRect(x, y, size, size);
+            } else {
+                gc.clearRect(x, y, size, size);
             }
         });
 
-    }
 
-    private void getMouseEvents(Scene scene) {
-
-        scene.addEventFilter(MouseEvent.ANY, event -> {
-            mouseX = event.getX();
-            mouseY = event.getY();
-        });
-
-        scene.addEventFilter(MouseEvent.MOUSE_PRESSED, event -> mousePressed = true);
-
-        scene.addEventFilter(MouseEvent.MOUSE_RELEASED, event -> mousePressed = false);
-    }
-
-    private void draw(Scene scene, Pane root) {
-        Rectangle block = null;
-
-        //creates the blocks
-        if (mousePressed && mouseInDrawRange()) {
-            block = new Rectangle(drawSize, drawSize);
-            block.setX(mouseX);
-            block.setY(mouseY);
-            blocks.add(block);
-        }
-
-        //adds the blocks to scene
-        for (Shape shape : blocks) {
-            if (block != null) {
-                try {
-                    root.getChildren().add(block);
-                } catch (Exception IllegalArgumentException) {
-                    //No duplicate children "shape' in parent "root"
-                }
-            }
-        }
-    }
-
-    private boolean mouseInDrawRange() {
-        return mouseX > 50; //todo - change to toolbar width
     }
 }
