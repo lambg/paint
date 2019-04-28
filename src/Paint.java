@@ -1,8 +1,4 @@
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -15,7 +11,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+
+import java.util.ArrayList;
 
 public class Paint extends Application {
 
@@ -29,6 +28,10 @@ public class Paint extends Application {
 
     private Button drawButton, eraserButton, clearButton, lineThin, lineRgular, lineThick;
     private boolean draw = true;
+
+    private ArrayList<Rectangle> colors = new ArrayList<>();
+
+    private Color drawColor = Color.BLACK;
 
     private double x, y;
     private double size = 4;
@@ -104,11 +107,29 @@ public class Paint extends Application {
         leftToolbarColOne.getItems().add(lineRgular);
         leftToolbarColOne.getItems().add(new Separator());
 
-        VBox leftBarColOne = new VBox(leftToolbarColOne);
-        leftBarColOne.setSpacing(5);
-        leftBarColOne.setMinHeight(DEFAULT_HEIGHT);
-        root.getChildren().add(leftBarColOne);
 
+        for (int x = 0; x < 10; x++) {
+            Rectangle tmp = new Rectangle(10, 10);
+            colors.add(tmp);
+            leftToolbarColOne.getItems().add(colors.get(x));
+        }
+
+        colors.get(1).setFill(Color.GRAY);
+        colors.get(2).setFill(Color.DARKRED);
+        colors.get(3).setFill(Color.RED);
+        colors.get(4).setFill(Color.ORANGE);
+        colors.get(5).setFill(Color.YELLOW);
+        colors.get(6).setFill(Color.GREEN);
+        colors.get(7).setFill(Color.BLUE);
+        colors.get(8).setFill(Color.NAVY);
+        colors.get(9).setFill(Color.PURPLE);
+
+
+        VBox leftBarColOne = new VBox(leftToolbarColOne);
+        leftBarColOne.setSpacing(10);
+        leftBarColOne.setMinHeight(DEFAULT_HEIGHT);
+
+        root.getChildren().add(leftBarColOne);
 
         //todo - fix the second toolbar so that it doesn't interfere with the buttons in the first one
 //        VBox tmp = new VBox();
@@ -124,6 +145,10 @@ public class Paint extends Application {
         eraserButton.setOnMouseClicked(event -> draw = false);
         clearButton.setOnMouseClicked(event -> gc.clearRect(0, 0, DEFAULT_WIDTH, DEFAULT_HEIGHT));
 
+        for (Rectangle tmp : colors) {
+            tmp.setOnMouseClicked(event -> drawColor = (Color) tmp.getFill());
+        }
+
         lineThin.setOnMouseClicked(event -> {
             if (size > 5) size -= 3;
         });
@@ -135,7 +160,7 @@ public class Paint extends Application {
             y = event.getY();
 
             if (draw) {
-                gc.setFill(Color.RED);
+                gc.setFill(drawColor);
                 gc.fillOval(x - size / 2, y - size / 2, size, size);
             } else {
                 gc.clearRect(x - size / 2, y - size / 2, size, size);
